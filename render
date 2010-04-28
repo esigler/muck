@@ -55,27 +55,29 @@ open my $input_file, '<',
 my $raw_content;
 
 my @raw_input = <$input_file>;
-$raw_content = join '', @raw_input;
+$raw_content = join q{}, @raw_input;
 
 close $input_file || croak 'Unable to close input file';
 
-# FIXME: And what happens if we can't parse the YAML?
+my $parsed_content;
 
-my $parsed_content = Load $raw_content;
+eval {
+    $parsed_content = Load $raw_content;
+    1;
+    }
+    or do {
+    croak 'Unable to parse content';
+    };
 
 open my $template_file, '<',
     $template_filename || croak 'Unable to open template file';
 
 my $raw_template;
 
-while ( my $line = <$template_file> ) {
-    $raw_template = $raw_template . $line;
-}
+my @raw_tmpl_input = <$template_file>;
+$raw_template = join q{}, @raw_tmpl_input;
 
 close $template_file || croak 'Unable to close content file';
-
-# FIXME: Better to create a method that copies object contents to a hash reference?
-# FIXME: Also would like to get rid of ending newline
 
 $parsed_content->{'body'} = markdown( $parsed_content->{'body'} );
 

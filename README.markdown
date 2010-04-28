@@ -28,4 +28,6 @@ So, another thing I'm trying out is just how far to take code sanitization effor
 
 *   Be run through Perltidy (with Perl Best Practices settings)
 *   Have "use strict" and "use warnings" turned on (with no exceptions)
-*   And, just to see how weird things would get, Perlcritc turned up all the way to severity=1 (default PBP ruleset to begin with, we'll see what else to add later.) 
+*   And, just to see how weird things would get, Perlcritc turned up all the way to severity=1 (default PBP ruleset to begin with, we'll see what else to add later.)
+
+Will this result in some of the most overgrown, pedantic code ever?  Of course!
