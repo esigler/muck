@@ -1,0 +1,93 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use version;
+use Carp qw( croak );
+use YAML::XS;
+use Template::Simple;
+use Text::Markdown ('markdown');
+use Readonly;
+use Data::Dumper;
+
+Readonly::Scalar my $ARGS => 3;
+
+# FIXME: Yeah, so this isn't going to work with Git (auto-expansion of vars via RCS)
+
+# $Id$
+
+our $VERSION = qv('0.1.0');
+
+my $num_arguments = $#ARGV + 1;
+
+if ( $num_arguments != $ARGS ) {
+    print
+        "Usage: render <path/to/input> <path/to/template> <path/to/output>\n"
+        || croak 'Unable to print usage';
+    exit 1;
+}
+
+my $input_filename    = $ARGV[0];
+my $template_filename = $ARGV[1];
+my $output_filename   = $ARGV[2];
+
+if ( !-e $input_filename ) {
+    print "Input file does not exist\n"
+        || croak 'Unable to print input file warning';
+    exit 1;
+}
+
+if ( !-e $template_filename ) {
+    print "Template file does not exist\n"
+        || croak 'Unable to print template file warning';
+    exit 1;
+}
+
+if ( -e $output_filename ) {
+    print "Output file already exists\n"
+        || croak 'Unable to print output file warning';
+    exit 1;
+}
+
+open my $input_file, '<',
+    $input_filename || croak 'Unable to open input file';
+
+my $raw_content;
+
+my @raw_input = <$input_file>;
+$raw_content = join '', @raw_input;
+
+close $input_file || croak 'Unable to close input file';
+
+# FIXME: And what happens if we can't parse the YAML?
+
+my $parsed_content = Load $raw_content;
+
+open my $template_file, '<',
+    $template_filename || croak 'Unable to open template file';
+
+my $raw_template;
+
+while ( my $line = <$template_file> ) {
+    $raw_template = $raw_template . $line;
+}
+
+close $template_file || croak 'Unable to close content file';
+
+# FIXME: Better to create a method that copies object contents to a hash reference?
+# FIXME: Also would like to get rid of ending newline
+
+$parsed_content->{'body'} = markdown( $parsed_content->{'body'} );
+
+my $template_generator = Template::Simple->new();
+
+my $rendered_content =
+    $template_generator->render( $raw_template, $parsed_content );
+
+open my $output_file, '>',
+    $output_filename || croak 'Unable to open output file';
+
+print {$output_file} ${$rendered_content}
+    || croak 'Unable to print rendered content';
+
+close $output_file || croak 'Unable to close output file';
