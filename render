@@ -8,7 +8,7 @@ use YAML::XS;
 use Template::Simple;
 use Text::Markdown ('markdown');
 use Readonly;
-use Data::Dumper;
+use English qw( -no_match_vars );
 
 Readonly::Scalar my $ARGS => 3;
 
@@ -52,10 +52,7 @@ if ( -e $output_filename ) {
 open my $input_file, '<',
     $input_filename || croak 'Unable to open input file';
 
-my $raw_content;
-
-my @raw_input = <$input_file>;
-$raw_content = join q{}, @raw_input;
+my $raw_content = do { local $INPUT_RECORD_SEPARATOR = undef; <$input_file> };
 
 close $input_file || croak 'Unable to close input file';
 
@@ -72,10 +69,8 @@ eval {
 open my $template_file, '<',
     $template_filename || croak 'Unable to open template file';
 
-my $raw_template;
-
-my @raw_tmpl_input = <$template_file>;
-$raw_template = join q{}, @raw_tmpl_input;
+my $raw_template =
+    do { local $INPUT_RECORD_SEPARATOR = undef; <$template_file> };
 
 close $template_file || croak 'Unable to close content file';
 
