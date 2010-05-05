@@ -9,6 +9,7 @@ use Template::Simple;
 use Text::Markdown ('markdown');
 use Readonly;
 use English qw( -no_match_vars );
+use Scalar::Util 'reftype';
 
 Readonly::Scalar my $ARGS => 3;
 
@@ -74,7 +75,11 @@ my $raw_template =
 
 close $template_file || croak 'Unable to close content file';
 
-$parsed_content->{'body'} = markdown( $parsed_content->{'body'} );
+if ( reftype($parsed_content) eq 'HASH' ) {
+    if ( defined $parsed_content->{'body'} ) {
+        $parsed_content->{'body'} = markdown( $parsed_content->{'body'} );
+    }
+}
 
 my $template_generator = Template::Simple->new();
 
